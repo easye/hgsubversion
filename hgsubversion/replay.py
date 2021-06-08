@@ -6,9 +6,9 @@ from mercurial import revlog
 from mercurial import node
 from mercurial import context
 
-import compathacks
-import svnexternals
-import util
+from . import compathacks
+from . import svnexternals
+from . import util
 
 
 class MissingPlainTextError(Exception):

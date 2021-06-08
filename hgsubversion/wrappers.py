@@ -27,12 +27,12 @@ except ImportError:
     logcmdutil = None
 from mercurial import scmutil
 
-import compathacks
-import replay
-import pushmod
-import stupid as stupidmod
-import svnwrap
-import util
+from . import compathacks
+from . import replay
+from . import pushmod
+from . import stupid as stupidmod
+from . import svnwrap
+from . import util
 
 try:
     from mercurial import obsolete
@@ -519,11 +519,11 @@ def pull(repo, source, heads=[], force=False, meta=None):
                         converted = True
                         firstrun = False
 
-                    except svnwrap.SubversionRepoCanNotReplay, e: # pragma: no cover
+                    except svnwrap.SubversionRepoCanNotReplay as e: # pragma: no cover
                         ui.status('%s\n' % e.message)
                         stupidmod.print_your_svn_is_old_message(ui)
                         have_replay = False
-                    except svnwrap.SubversionException, e: # pragma: no cover
+                    except svnwrap.SubversionException as e: # pragma: no cover
                         if (e.args[1] == svnwrap.ERR_RA_DAV_REQUEST_FAILED
                             and '502' in str(e)
                             and tries < 3):

@@ -29,8 +29,14 @@ try:
         from mercurial.peer import peerrepository
     from mercurial import httppeer
 except ImportError:
-    from mercurial.repo import repository as peerrepository
-    from mercurial import httprepo as httppeer
+    try: 
+        from mercurial.repo import repository as peerrepository
+    except ImportError:
+        from mercurial.interfaces import repository as peerrepository
+    try:
+        from mercurial import httprepo as httppeer
+    except ImportError:
+        from mercurial import statichttprepo as httppeer 
 
 try:
     from mercurial import phases
@@ -38,10 +44,10 @@ try:
 except ImportError:
     phases = None
 
-import util
-import wrappers
-import svnwrap
-import svnmeta
+from . import util
+from . import wrappers
+from . import svnwrap
+from . import svnmeta
 
 propertycache = hgutil.propertycache
 
@@ -163,7 +169,7 @@ class svnremoterepo(peerrepository):
         try:
             auth = self.svnauth
             return svnwrap.SubversionRepo(auth[0], auth[1], auth[2], password_stores=self.password_stores)
-        except svnwrap.SubversionConnectionException, e:
+        except svnwrap.SubversionConnectionException as e:
             self.ui.traceback()
             raise error.Abort(e)
 

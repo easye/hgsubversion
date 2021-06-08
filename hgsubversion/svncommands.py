@@ -9,13 +9,13 @@ from mercurial import node
 from mercurial import util as hgutil
 from mercurial import error
 
-import compathacks
-import svnwrap
-import svnrepo
-import util
-import svnexternals
-import verify
-import svnmeta
+from . import compathacks
+from . import svnwrap
+from . import svnrepo
+from . import util
+from . import svnexternals
+from . import verify
+from . import svnmeta
 
 
 def updatemeta(ui, repo, args, **opts):
@@ -84,7 +84,7 @@ def _buildmeta(ui, repo, args, partial=False, skipuuid=False):
             if not foundpartialinfo:
                 ui.status('missing some metadata -- doing a full rebuild\n')
                 partial = False
-        except IOError, err:
+        except IOError as err:
             if err.errno != errno.ENOENT:
                 raise
             ui.status('missing some metadata -- doing a full rebuild\n')
@@ -467,7 +467,7 @@ def svn(ui, repo, subcommand, *args, **opts):
     try:
         commandfunc = table[subcommand]
         return commandfunc(ui, args=args, repo=repo, **opts)
-    except svnwrap.SubversionConnectionException, e:
+    except svnwrap.SubversionConnectionException as e:
         raise error.Abort(*e.args)
     except TypeError:
         tb = traceback.extract_tb(sys.exc_info()[2])
@@ -475,7 +475,7 @@ def svn(ui, repo, subcommand, *args, **opts):
             ui.status('Bad arguments for subcommand %s\n' % subcommand)
         else:
             raise
-    except KeyError, e:
+    except KeyError as e:
         tb = traceback.extract_tb(sys.exc_info()[2])
         if len(tb) == 1:
             ui.status('Unknown subcommand %s\n' % subcommand)
@@ -486,14 +486,14 @@ svn.optionalrepo=True
 svn.norepo = False
 
 table = {
-    'genignore': genignore,
-    'info': info,
-    'listauthors': listauthors,
-    'update': update,
-    'help': help_,
-    'updatemeta': updatemeta,
-    'rebuildmeta': rebuildmeta,
-    'updateexternals': svnexternals.updateexternals,
-    'verify': verify.verify,
+    b'genignore': genignore,
+    b'info': info,
+    b'listauthors': listauthors,
+    b'update': update,
+    b'help': help_,
+    b'updatemeta': updatemeta,
+    b'rebuildmeta': rebuildmeta,
+    b'updateexternals': svnexternals.updateexternals,
+    b'verify': verify.verify,
 }
 svn.__doc__ = _helpgen()

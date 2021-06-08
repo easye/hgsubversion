@@ -51,12 +51,12 @@ from mercurial import discovery
 from mercurial import revset
 from mercurial import subrepo
 
-import svncommands
-import util
-import svnrepo
-import wrappers
-import svnexternals
-import compathacks
+from . import svncommands
+from . import util
+from . import svnrepo
+from . import wrappers
+from . import svnexternals
+from . import compathacks
 
 svnopts = [
     ('', 'stupid', None,
@@ -67,18 +67,18 @@ svnopts = [
 # fixdoc means update the docstring
 # TODO: fixdoc hoses l18n
 wrapcmds = { # cmd: generic, target, fixdoc, ppopts, opts
-    'parents': (False, None, False, False, [
-        ('', 'svn', None, 'show parent svn revision instead'),
+    b'parents': (False, None, False, False, [
+        ('', b'svn', None, 'show parent svn revision instead'),
     ]),
-    'diff': (False, None, False, False, [
-        ('', 'svn', None, 'show svn diffs against svn parent'),
+    b'diff': (False, None, False, False, [
+        (b'', b'svn', None, 'show svn diffs against svn parent'),
     ]),
-    'pull': (True, 'sources', True, True, []),
-    'push': (True, 'destinations', True, True, []),
-    'incoming': (False, 'sources', True, True, []),
-    'version': (False, None, False, False, [
-        ('', 'svn', None, 'print hgsubversion information as well')]),
-    'clone': (False, 'sources', True, True, [
+    b'pull': (True, b'sources', True, True, []),
+    b'push': (True, b'destinations', True, True, []),
+    b'incoming': (False, b'sources', True, True, []),
+    b'version': (False, None, False, False, [
+        (b'', b'svn', None, 'print hgsubversion information as well')]),
+    b'clone': (False, b'sources', True, True, [
         ('T', 'tagpaths', '',
          'list of paths to search for tags in Subversion repositories'),
         ('', 'branchdir', '',
@@ -114,17 +114,17 @@ def extsetup(ui):
     """insert command wrappers for a bunch of commands"""
 
     docvals = {'extension': 'hgsubversion'}
-    for cmd, (generic, target, fixdoc, ppopts, opts) in wrapcmds.iteritems():
+    for cmd, (generic, target, fixdoc, ppopts, opts) in iter(wrapcmds.items()):
 
         if fixdoc and wrappers.generic.__doc__:
             docvals['command'] = cmd
             docvals['Command'] = cmd.capitalize()
             docvals['target'] = target
             doc = wrappers.generic.__doc__.strip() % docvals
-            fn = getattr(commands, cmd)
+            fn = getattr(commands, cmd.decode())
             fn.__doc__ = fn.__doc__.rstrip() + '\n\n    ' + doc
 
-        wrapped = generic and wrappers.generic or getattr(wrappers, cmd)
+        wrapped = generic and wrappers.generic or getattr(wrappers, cmd.decode())
         entry = extensions.wrapcommand(commands.table, cmd, wrapped)
         if ppopts:
             entry[1].extend(svnopts)
@@ -135,8 +135,8 @@ def extsetup(ui):
         rebase = extensions.find('rebase')
         if not rebase:
             return
-        entry = extensions.wrapcommand(rebase.cmdtable, 'rebase', wrappers.rebase)
-        entry[1].append(('', 'svn', None, 'automatic svn rebase'))
+        entry = extensions.wrapcommand(rebase.cmdtable, b'rebase', wrappers.rebase)
+        entry[1].append((b'', b'svn', None, 'automatic svn rebase'))
     except:
         pass
 
@@ -170,7 +170,7 @@ def reposetup(ui, repo):
         revset.methods['string'] = revset.stringset
         revset.methods['symbol'] = revset.stringset
 
-_old_local = hg.schemes['file']
+_old_local = hg.schemes[b'file']
 def _lookup(url):
     if util.islocalrepo(url):
         return svnrepo
@@ -186,28 +186,28 @@ if hgutil.safehasattr(commands, 'optionalrepo'):
     commands.optionalrepo += ' svn'
 
 svncommandopts = [
-    ('u', 'svn-url', '', 'path to the Subversion server.'),
-    ('', 'stupid', False, 'be stupid and use diffy replay.'),
-    ('A', 'authors', '', 'username mapping filename'),
-    ('', 'filemap', '',
-     'remap file to exclude paths or include only certain paths'),
-    ('', 'force', False, 'force an operation to happen'),
-    ('', 'username', '', 'username for authentication'),
-    ('', 'password', '', 'password for authentication'),
-    ('r', 'rev', [], 'Mercurial revision'),
-    ('', 'unsafe-skip-uuid-check', False,
-     'skip repository uuid check in rebuildmeta'),
+    (b'u', b'svn-url', b'', b'path to the Subversion server.'),
+    (b'', b'stupid', False, b'be stupid and use diffy replay.'),
+    (b'A', b'authors', b'', b'username mapping filename'),
+    (b'', b'filemap', b'',
+     b'remap file to exclude paths or include only certain paths'),
+    (b'', b'force', False, b'force an operation to happen'),
+    (b'', b'username', b'', b'username for authentication'),
+    (b'', b'password', b'', b'password for authentication'),
+    (b'r', b'rev', [], b'Mercurial revision'),
+    (b'', b'unsafe-skip-uuid-check', False,
+     b'skip repository uuid check in rebuildmeta'),
 ]
-svnusage = 'hg svn <subcommand> ...'
+svnusage = b'hg svn <subcommand> ...'
 
 # only these methods are public
-__all__ = ('cmdtable', 'reposetup', 'uisetup')
+__all__ = (b'cmdtable', b'reposetup', b'uisetup')
 
 # set up commands and templatekeywords (written this way to maintain backwards
 # compatibility until we drop support for 3.7 for templatekeywords and 4.3 for
 # commands)
 cmdtable = {
-    "svn": (svncommands.svn, svncommandopts, svnusage),
+    b"svn": (svncommands.svn, svncommandopts, svnusage),
 }
 configtable = {}
 try:
@@ -218,7 +218,7 @@ try:
     if hgutil.safehasattr(registrar, 'command'):
         cmdtable = {}
         command = registrar.command(cmdtable)
-        @command('svn', svncommandopts, svnusage)
+        @command(b'svn', svncommandopts, svnusage)
         def svncommand(*args, **kwargs):
             return svncommands.svn(*args, **kwargs)
 
@@ -253,74 +253,74 @@ if not hgutil.safehasattr(configitem, 'dynamicdefault'):
 
 # real default is 'svnexternals'. Can also be 'subrepos' or
 # 'ignore'. Defines how to handle svn:externals.
-configitem('hgsubversion', 'externals', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'externals', default=configitem.dynamicdefault)
 
 # If true, use diff+patch instead of svn native replay RPC.
-configitem('hgsubversion', 'stupid', default=False)
+configitem(b'hgsubversion', b'stupid', default=False)
 
 # Allows configuring extra of svn+$SCHEME tunnel protocols
-configitem('hgsubversion', 'tunnels', default=list)
+configitem(b'hgsubversion', b'tunnels', default=list)
 # If true, monkeypatch revset parser to allow r123 to map to
 # Subversion revision 123.
-configitem('hgsubversion', 'nativerevs', default=False)
+configitem(b'hgsubversion', b'nativerevs', default=False)
 
 # Auth config for the Subversion backend
-configitem('hgsubversion', 'username', default='')
-configitem('hgsubversion', 'password', default='')
+configitem(b'hgsubversion', b'username', default='')
+configitem(b'hgsubversion', b'password', default='')
 # The default value of the empty list means to use a default set of
 # password stores. The specific ones that will be consulted depend on
 # the compile-time options of your Subversion libraries.
-configitem('hgsubversion', 'password_stores', default=list)
+configitem(b'hgsubversion', b'password_stores', default=list)
 
 # real default is None
-configitem('hgsubversion', 'revmapimpl', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'revmapimpl', default=configitem.dynamicdefault)
 # real default is 'auto'
-configitem('hgsubversion', 'layout', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'layout', default=configitem.dynamicdefault)
 
 # real default is True
-configitem('hgsubversion', 'defaultauthors', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'defaultauthors', default=configitem.dynamicdefault)
 # real default is False
-configitem('hgsubversion', 'caseignoreauthors', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'caseignoreauthors', default=configitem.dynamicdefault)
 # real default is None
-configitem('hgsubversion', 'mapauthorscmd', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'mapauthorscmd', default=configitem.dynamicdefault)
 # Defaults to the UUID identifying the source svn repo.
-configitem('hgsubversion', 'defaulthost', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'defaulthost', default=configitem.dynamicdefault)
 # real default is True
-configitem('hgsubversion', 'usebranchnames', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'usebranchnames', default=configitem.dynamicdefault)
 # real default is ''
-configitem('hgsubversion', 'defaultmessage', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'defaultmessage', default=configitem.dynamicdefault)
 # real default is ''
-configitem('hgsubversion', 'branch', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'branch', default=configitem.dynamicdefault)
 # real default is ['tags']
-configitem('hgsubversion', 'taglocations', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'taglocations', default=configitem.dynamicdefault)
 # real default is 'trunk'
-configitem('hgsubversion', 'trunkdir', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'trunkdir', default=configitem.dynamicdefault)
 # real default is ''
-configitem('hgsubversion', 'infix', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'infix', default=configitem.dynamicdefault)
 # real default is ''
-configitem('hgsubversion', 'unsafeskip', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'unsafeskip', default=configitem.dynamicdefault)
 # real default is ['tags']
-configitem('hgsubversion', 'tagpaths', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'tagpaths', default=configitem.dynamicdefault)
 # real default is 'branches'
-configitem('hgsubversion', 'branchdir', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'branchdir', default=configitem.dynamicdefault)
 # real default is 200
-configitem('hgsubversion', 'filestoresize', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'filestoresize', default=configitem.dynamicdefault)
 # Typically unset, custom location of map files typically stored inside .hg
-configitem('hgsubversion', 'filemap', default=None)
-configitem('hgsubversion', 'branchmap', default=None)
-configitem('hgsubversion', 'authormap', default=None)
-configitem('hgsubversion', 'tagmap', default=None)
+configitem(b'hgsubversion', b'filemap', default=None)
+configitem(b'hgsubversion', b'branchmap', default=None)
+configitem(b'hgsubversion', b'authormap', default=None)
+configitem(b'hgsubversion', b'tagmap', default=None)
 # real default is False
-configitem('hgsubversion', 'failoninvalidreplayfile',
+configitem(b'hgsubversion', b'failoninvalidreplayfile',
            default=configitem.dynamicdefault)
 # real default is 0
-configitem('hgsubversion', 'startrev', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'startrev', default=configitem.dynamicdefault)
 # extra pragmas to feed to sqlite revmap implementation
-configitem('hgsubversion', 'sqlitepragmas', default=list)
+configitem(b'hgsubversion', b'sqlitepragmas', default=list)
 # real default is False
-configitem('hgsubversion', 'failonmissing', default=configitem.dynamicdefault)
+configitem(b'hgsubversion', b'failonmissing', default=configitem.dynamicdefault)
 # svn:externals support
-configitem('subrepos', 'hgsubversion:allowed', default=False)
+configitem(b'subrepos', b'hgsubversion:allowed', default=False)
 
 def _templatehelper(ctx, kw):
     '''
@@ -344,37 +344,37 @@ _ishg48 = 'requires' in inspect.getargspec(
     getattr(templatekeyword, '_extrasetup', lambda: None)).args
 
 if _ishg48:
-    @templatekeyword('svnrev', requires={'ctx'})
+    @templatekeyword(b'svnrev', requires={b'ctx'})
     def svnrevkw(context, mapping):
         """:svnrev: String. Converted subversion revision number."""
-        ctx = context.resource(mapping, 'ctx')
-        return _templatehelper(ctx, 'svnrev')
+        ctx = context.resource(mapping, b'ctx')
+        return _templatehelper(ctx, b'svnrev')
 
-    @templatekeyword('svnpath', requires={'ctx'})
+    @templatekeyword(b'svnpath', requires={b'ctx'})
     def svnpathkw(context, mapping):
-        """:svnpath: String. Converted subversion revision project path."""
-        ctx = context.resource(mapping, 'ctx')
-        return _templatehelper(ctx, 'svnpath')
+        """:svnpath: String. Converted subvenrsion revision project path."""
+        ctx = context.resource(mapping, b'ctx')
+        return _templatehelper(ctx, b'svnpath')
 
-    @templatekeyword('svnuuid', requires={'ctx'})
+    @templatekeyword(b'svnuuid', requires={b'ctx'})
     def svnuuidkw(context, mapping):
         """:svnuuid: String. Converted subversion revision repository identifier."""
-        ctx = context.resource(mapping, 'ctx')
-        return _templatehelper(ctx, 'svnuuid')
+        ctx = context.resource(mapping, b'ctx')
+        return _templatehelper(ctx, b'svnuuid')
 else:
-    @templatekeyword('svnrev')
+    @templatekeyword(b'svnrev')
     def svnrevkw(**args):
         """:svnrev: String. Converted subversion revision number."""
-        return _templatehelper(args['ctx'], 'svnrev')
+        return _templatehelper(args[b'ctx'], b'svnrev')
 
-    @templatekeyword('svnpath')
+    @templatekeyword(b'svnpath')
     def svnpathkw(**args):
         """:svnpath: String. Converted subversion revision project path."""
-        return _templatehelper(args['ctx'], 'svnpath')
+        return _templatehelper(args[b'ctx'], b'svnpath')
 
-    @templatekeyword('svnuuid')
+    @templatekeyword(b'svnuuid')
     def svnuuidkw(**args):
         """:svnuuid: String. Converted subversion revision repository identifier."""
-        return _templatehelper(args['ctx'], 'svnuuid')
+        return _templatehelper(args[b'ctx'], b'svnuuid')
 
 loadkeyword(templatekeyword)

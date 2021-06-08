@@ -1,4 +1,4 @@
-import compathacks
+from . import compathacks
 import re
 import os
 import urllib
@@ -184,7 +184,7 @@ def dump(data, file_path):
     This is present because I kept corrupting my revmap by managing to hit ^C
     during the serialization of that file.
     """
-    f = hgutil.atomictempfile(file_path, 'w+b', 0644)
+    f = hgutil.atomictempfile(file_path, 'w+b', 644)
     json.dump(_convert(data, _scrub), f)
     f.close()
 

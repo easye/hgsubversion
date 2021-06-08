@@ -25,7 +25,7 @@ def hook(ui, repo, **kwargs):
         try:
             hgsubversion.svncommands.updatemeta(ui, repo, args=[])
             ui.status("Updated svn metadata\n")
-        except Exception, e:
+        except Exception as e:
             ui.warn("Failed to update svn metadata: %s" % str(e))
 
     return False

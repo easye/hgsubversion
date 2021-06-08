@@ -303,7 +303,7 @@ class SubversionRepo(object):
             self.remote = ra.RemoteAccess(url=self.svn_url,
                                           client_string_func=getclientstring,
                                           auth=auth)
-        except SubversionException, e:
+        except SubversionException as e:
             # e.child contains a detailed error messages
             msglist = []
             svn_exc = e
@@ -334,7 +334,7 @@ class SubversionRepo(object):
                                 callback=callback)
 
             return holder[-1]
-        except SubversionException, e:
+        except SubversionException as e:
             if e.args[0] == ERR_FS_NOT_FOUND:
                 raise
             else:
@@ -397,7 +397,7 @@ class SubversionRepo(object):
                                     start=start + 1, end=stop, limit=chunk_size,
                                     discover_changed_paths=True,
                                     callback=callback)
-            except SubversionException, e:
+            except SubversionException as e:
                 if e.args[1] == ERR_FS_NOT_FOUND:
                     msg = ('%s not found at revision %d!'
                            % (self.subdir.rstrip('/'), stop))
@@ -521,7 +521,7 @@ class SubversionRepo(object):
 
         try:
             self.remote.replay(revision, oldestrev, BaseEditor(editor))
-        except (SubversionException, NotImplementedError), e: # pragma: no cover
+        except (SubversionException, NotImplementedError) as e: # pragma: no cover
             # can I depend on this number being constant?
             if (isinstance(e, NotImplementedError) or
                 e.args[1] == subvertpy.ERR_RA_NOT_IMPLEMENTED or
@@ -576,7 +576,7 @@ class SubversionRepo(object):
                 info = info[-1]
             mode = (properties.PROP_EXECUTABLE in info) and 'x' or ''
             mode = (properties.PROP_SPECIAL in info) and 'l' or mode
-        except SubversionException, e:
+        except SubversionException as e:
             if e.args[1] in (ERR_FS_NOT_FOUND, ERR_RA_DAV_PATH_NOT_FOUND):
                 # File not found
                 raise IOError(errno.ENOENT, e.args[0])
@@ -594,7 +594,7 @@ class SubversionRepo(object):
         try:
             pl = self.client.proplist(self.path2url(path), revision,
                                       client.depth_empty)
-        except SubversionException, e:
+        except SubversionException as e:
             # Specified path does not exist at this revision
             if e.args[1] == subvertpy.ERR_NODE_UNKNOWN_KIND:
                 raise IOError(errno.ENOENT, e.args[0])
@@ -612,7 +612,7 @@ class SubversionRepo(object):
         try:
             entries = self.client.list(self.path2url(dirpath), revision,
                                        client.depth_infinity, ra.DIRENT_KIND)
-        except SubversionException, e:
+        except SubversionException as e:
             if e.args[1] == subvertpy.ERR_FS_NOT_FOUND:
                 raise IOError(errno.ENOENT,
                               '%s cannot be found at r%d' % (dirpath, revision))

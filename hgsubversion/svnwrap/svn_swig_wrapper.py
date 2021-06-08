@@ -284,7 +284,7 @@ class SubversionRepo(object):
         try:
             self.ra = ra.open2(self.svn_url, callbacks,
                                svn_config, self.pool)
-        except SubversionException, e:
+        except SubversionException as e:
             # e.child contains a detailed error messages
             msglist = []
             svn_exc = e
@@ -313,7 +313,7 @@ class SubversionRepo(object):
                        self.pool)
 
             return holder[-1]
-        except SubversionException, e:
+        except SubversionException as e:
             if e.apr_err not in [core.SVN_ERR_FS_NOT_FOUND]:
                 raise
             else:
@@ -372,7 +372,7 @@ class SubversionRepo(object):
                            True, # stop on copies
                            callback,
                            self.pool)
-            except core.SubversionException, e:
+            except core.SubversionException as e:
                 if e.apr_err == core.SVN_ERR_FS_NOT_FOUND:
                     msg = ('%s not found at revision %d!'
                            % (self.subdir.rstrip('/'), stop))
@@ -499,7 +499,7 @@ class SubversionRepo(object):
         try:
             ra.replay(self.ra, revision, oldest_rev_i_have, True, e_ptr,
                       e_baton, self.pool)
-        except SubversionException, e: # pragma: no cover
+        except SubversionException as e: # pragma: no cover
             # can I depend on this number being constant?
             if (e.apr_err == core.SVN_ERR_RA_NOT_IMPLEMENTED or
                 e.apr_err == core.SVN_ERR_UNSUPPORTED_FEATURE):
@@ -566,7 +566,7 @@ class SubversionRepo(object):
                 client.diff3([], url2, optrev(other_rev), url, optrev(revision),
                              True, True, deleted, ignore_type, 'UTF-8', out, err,
                              self.client_context, self.pool)
-            except SubversionException, e:
+            except SubversionException as e:
                 # "Can't write to stream: The handle is invalid."
                 # This error happens systematically under Windows, possibly
                 # related to file handles being non-write shareable by default.
@@ -605,7 +605,7 @@ class SubversionRepo(object):
                 info = info[-1]
             mode = ("svn:executable" in info) and 'x' or ''
             mode = ("svn:special" in info) and 'l' or mode
-        except SubversionException, e:
+        except SubversionException as e:
             notfound = (core.SVN_ERR_FS_NOT_FOUND,
                         core.SVN_ERR_RA_DAV_PATH_NOT_FOUND)
             if e.args[1] in notfound: # File not found
@@ -627,7 +627,7 @@ class SubversionRepo(object):
         try:
             pl = client.proplist2(rpath, rev, rev, False,
                                   self.client_context, self.pool)
-        except SubversionException, e:
+        except SubversionException as e:
             # Specified path does not exist at this revision
             if e.apr_err == core.SVN_ERR_NODE_UNKNOWN_KIND:
                 raise IOError(errno.ENOENT, e.args[0])
@@ -649,7 +649,7 @@ class SubversionRepo(object):
         rev = optrev(revision)
         try:
             entries = client.ls(rpath, rev, True, self.client_context, pool)
-        except SubversionException, e:
+        except SubversionException as e:
             if e.apr_err == core.SVN_ERR_FS_NOT_FOUND:
                 raise IOError(errno.ENOENT,
                               '%s cannot be found at r%d' % (dirpath, revision))

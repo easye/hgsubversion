@@ -4,10 +4,10 @@ import posixpath
 from mercurial import error
 from mercurial import worker
 
-import compathacks
-import svnwrap
-import svnrepo
-import util
+from . import compathacks
+from . import svnwrap
+from . import svnrepo
+from . import util
 
 def verify(ui, repo, args=None, **opts):
     '''verify current revision against Subversion repository

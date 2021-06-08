@@ -1,4 +1,4 @@
-import cStringIO
+import io 
 import errno
 import re
 
@@ -8,10 +8,10 @@ from mercurial import node
 from mercurial import patch
 from mercurial import revlog
 
-import compathacks
-import svnwrap
-import svnexternals
-import util
+from . import compathacks
+from . import svnwrap
+from . import svnexternals
+from . import util
 
 # Here is a diff mixing content and property changes in svn >= 1.7
 #
@@ -140,7 +140,7 @@ def mempatchproxy(parentctx, files):
             data = fctx.data()
             if 'l' in fctx.flags():
                 data = 'link ' + data
-            return cStringIO.StringIO(data).readlines()
+            return io.StringIO.StringIO(data).readlines()
 
         def writelines(self, fname, lines):
             files[fname] = ''.join(lines)
@@ -204,7 +204,7 @@ def patchrepo(ui, meta, parentctx, patchfp):
                 raise BadPatchApply('patching failed')
             if ret > 0:
                 raise BadPatchApply('patching succeeded with fuzz')
-        except patch.PatchError, e:
+        except patch.PatchError as e:
             raise BadPatchApply(str(e))
 
         files = {}
@@ -244,7 +244,7 @@ def diff_branchrev(ui, svn, meta, branch, branchpath, r, parentctx):
                 raise BadPatchApply('branch creation with mods')
     except svnwrap.SubversionRepoCanNotDiff:
         raise BadPatchApply('subversion diffing code is not supported')
-    except svnwrap.SubversionException, e:
+    except svnwrap.SubversionException as e:
         if len(e.args) > 1 and e.args[1] != svnwrap.ERR_FS_NOT_FOUND:
             raise
         raise BadPatchApply('previous revision does not exist')
@@ -257,7 +257,7 @@ def diff_branchrev(ui, svn, meta, branch, branchpath, r, parentctx):
     touched_files = set(f.name for f in changed)
     d2 = '\n'.join(f.diff for f in changed if f.diff)
     if changed:
-        files_data = patchrepo(ui, meta, parentctx, cStringIO.StringIO(d2))
+        files_data = patchrepo(ui, meta, parentctx, io.StringIO.StringIO(d2))
         for x in files_data.iterkeys():
             ui.note('M  %s\n' % x)
     else:
@@ -717,7 +717,7 @@ def convert_rev(ui, meta, svn, r, tbdelta, firstrun):
             try:
                 files_touched, filectxfn2 = diff_branchrev(
                     ui, svn, meta, b, branches[b], r, parentctx)
-            except BadPatchApply, e:
+            except BadPatchApply as e:
                 # Either this revision or the previous one does not exist.
                 ui.note("Fetching entire revision: %s.\n" % e.args[0])
                 incremental = False

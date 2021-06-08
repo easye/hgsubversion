@@ -414,7 +414,7 @@ class RevMap(dict):
         path = self._filepath
         try:
             f = open(path)
-        except IOError, err:
+        except IOError as err:
             if err.errno != errno.ENOENT:
                 raise
             return iter([])

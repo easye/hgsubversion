@@ -1,4 +1,4 @@
-import cStringIO
+from io import StringIO
 
 import os, re, shutil, stat, subprocess
 from mercurial import error as hgerror
@@ -13,7 +13,7 @@ except (ImportError, AttributeError):
     from mercurial import pathutil
     canonpath = pathutil.canonpath
 
-import util
+from . import util
 
 class externalsfile(dict):
     """Map svn directories to lists of externals entries.

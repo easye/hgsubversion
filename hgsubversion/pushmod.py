@@ -203,7 +203,7 @@ def commit(ui, repo, rev_ctx, meta, base_revision, svn):
         return svn.commit(new_target_files, rev_ctx.description(), file_data,
                           base_revision, set(addeddirs), set(deleteddirs),
                           props, newcopies)
-    except svnwrap.SubversionException, e:
+    except svnwrap.SubversionException as e:
         ui.traceback()
 
         if len(e.args) > 0 and e.args[1] in (svnwrap.ERR_FS_TXN_OUT_OF_DATE,
